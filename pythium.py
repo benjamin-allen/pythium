@@ -1,4 +1,5 @@
 from tkinter import *
+import re
 
 #CRITICAL VARS
 readfile = "default.elements"
@@ -96,23 +97,78 @@ class App:
     def __init__(self, master):
         elementslist = read_elements()
         self.elements = {}
+        self.mass_str = ""
 
         for i in range(len(elementslist)):
             self.elements[elementslist[i].symbol] = elementslist[i]
 
         frame = Frame(master)
         frame.grid_rowconfigure(7, minsize=size//2*10)
+        frame.grid_rowconfigure(10, minsize=size//2*10)
         frame.pack()
 
         for e in self.elements:
             button = Button(frame, height=size//2, width=size, text=e.capitalize(),
-                            command=lambda arg=e: self.call(arg))
+                            command=lambda arg=e: self.emplace(arg))
             button.config(relief=SOLID, overrelief=FLAT, bd=2)
             button.grid(row=self.elements[e].ypos, column=self.elements[e].xpos, padx=1, pady=1)
 
-    def call(self, element):
-        # TODO: Stuff with the called element
-        print(element)
+        frame2 = Frame(master)
+        frame2.columnconfigure(0, weight=4)
+        frame2.columnconfigure(1, weight=1)
+        frame2.grid_rowconfigure(2, minsize=size//2*10)
+        frame2.pack()
+        self.entry = Entry(frame2, width=80)
+        self.entry.grid(row=1, column=0, sticky=W+E)
+        b = Button(frame2, text="Calculate mass!", command=self.read)
+        b.grid(row=1, column=1)
+
+    def emplace(self, element):
+        if self.entry.get() == "" or (self.entry.get()[-1].isdigit() and self.entry.get()[-2] is " ") or self.entry.get()[-1] == " ":
+            self.entry.insert(END, self.elements[element].symbol.capitalize())
+        else:
+            self.entry.insert(END, " " + self.elements[element].symbol.capitalize())
+
+    def read(self):
+        self.mass_str = self.entry.get().lower()
+        molecule_list = []
+        r = re.compile("\s*\+\s*")
+        self.mass_str = re.sub(r, "+", self.mass_str)
+        r = re.compile("\(.+\)\.[0-9]+")
+        parenthesized_molecules = re.findall(r, self.mass_str)
+        for p in parenthesized_molecules:
+            p, mult = p.split(").")
+            p = mult + p[1:]
+            self.mass_str = re.sub(r, " + " + p, self.mass_str)
+        for molecule in self.mass_str.split("+"):
+            molecule_list.append(molecule)
+        total_mass = 0.0
+        for molecule in molecule_list:
+            if molecule is "":
+                continue
+            m = {}
+            molecule = molecule.strip()
+            if molecule[0].isdigit():
+                m["front_multiplier"] = int(molecule[0])
+                while not molecule[0].isalpha():
+                    molecule = molecule[1:]
+            else:
+                m["front_multiplier"] = 1
+            molecule = molecule.split(" ")
+            m["molecule_mass"] = 0
+            for atom in molecule:
+                a = ""
+                mult = 1
+                try:
+                    a, mult = atom.strip().split(".")
+                except ValueError:
+                    a = atom.strip()
+                finally:
+                    mult = int(mult)
+                if a.strip() is not "":
+                    m["molecule_mass"] += (self.elements[a].mass * mult)
+            total_mass += m["molecule_mass"] * m["front_multiplier"]
+        print(total_mass)
 
 root = Tk()
 root.wm_title("Pythium")
