@@ -98,6 +98,7 @@ class App:
         elementslist = read_elements()
         self.elements = {}
         self.mass_str = ""
+        self.mass_history = []
 
         for i in range(len(elementslist)):
             self.elements[elementslist[i].symbol] = elementslist[i]
@@ -108,7 +109,7 @@ class App:
         frame.pack()
 
         for e in self.elements:
-            button = Button(frame, height=size//2, width=size, text=e.capitalize(),
+            button = Button(frame, width=size//2, height=size-3, font=("Sans", 12), text=e.capitalize(),
                             command=lambda arg=e: self.emplace(arg))
             button.config(relief=SOLID, overrelief=FLAT, bd=2)
             button.grid(row=self.elements[e].ypos, column=self.elements[e].xpos, padx=1, pady=1)
@@ -118,10 +119,15 @@ class App:
         frame2.columnconfigure(1, weight=1)
         frame2.grid_rowconfigure(2, minsize=size//2*10)
         frame2.pack()
-        self.entry = Entry(frame2, width=80)
+        self.entry = Entry(frame2, width=size*10, font=("Sans", 16))
+        self.entry.bind('<Return>', lambda event: self.read())
         self.entry.grid(row=1, column=0, sticky=W+E)
-        b = Button(frame2, text="Calculate mass!", command=self.read)
-        b.grid(row=1, column=1)
+        b = Button(frame2, text="Calculate", command=self.read, relief=SOLID, overrelief=FLAT, bd=2)
+        b.grid(row=1, column=1, padx=2)
+        self.label = Label(frame2, text="Mass: ", justify=LEFT)
+        self.label.config(width=20, font=("Sans", 32), anchor="w")
+        self.label.grid(row=3, column=0)
+
 
     def emplace(self, element):
         if self.entry.get() == "" or (self.entry.get()[-1].isdigit() and self.entry.get()[-2] is " ") or self.entry.get()[-1] == " ":
@@ -168,9 +174,10 @@ class App:
                 if a.strip() is not "":
                     m["molecule_mass"] += (self.elements[a].mass * mult)
             total_mass += m["molecule_mass"] * m["front_multiplier"]
-        print(total_mass)
+        self.mass_history.append([self.entry.get(), total_mass])
+        self.label.config(text="Mass: " + str(round(total_mass, 3)))
 
 root = Tk()
 root.wm_title("Pythium")
-pp = App(root)
+pythium = App(root)
 root.mainloop()
