@@ -15,6 +15,8 @@ def read_elements():
                 elements.append(e)
     return elements
 
+def molecule_has_multiplier(molecule):
+    return molecule.lstrip()[0].isdigit()
 
 class Element:
     def __init__(self):
@@ -128,10 +130,18 @@ class App:
         self.label.config(width=20, font=("Sans", 32), anchor="w")
         self.label.grid(row=3, column=0)
 
-
     def emplace(self, element):
-        if self.entry.get() == "" or (self.entry.get()[-1].isdigit() and self.entry.get()[-2] is " ") or self.entry.get()[-1] == " ":
+        s = self.entry.get()
+        if s == "" or (s[-1].isdigit() and s[-2] is " ") or s[-1] == " ":
             self.entry.insert(END, self.elements[element].symbol.capitalize())
+        elif s.split(" ")[-1] == element.capitalize():
+            self.entry.insert(END, ".2")
+        elif len(s.split(" ")[-1].split(".")) == 2 and s.split(" ")[-1].split(".")[-2] == element.capitalize():
+            v = int(s.split(" ")[-1].split(".")[-1]) + 1
+            s = s[:-len(str(v-1))]
+            s += str(v)
+            self.entry.delete(0, END)
+            self.entry.insert(END, s)
         else:
             self.entry.insert(END, " " + self.elements[element].symbol.capitalize())
 
@@ -141,11 +151,15 @@ class App:
         r = re.compile("\s*\+\s*")
         self.mass_str = re.sub(r, "+", self.mass_str)
         r = re.compile("\(.+\)\.[0-9]+")
-        parenthesized_molecules = re.findall(r, self.mass_str)
+        """parenthesized_molecules = re.findall(r, self.mass_str)
         for p in parenthesized_molecules:
+            for thing in self.mass_str.strip().split("+"):
+                if p in thing and thing[0].isdigit():
+                    print("It's gotta multiplier by default ugh")
+
             p, mult = p.split(").")
             p = mult + p[1:]
-            self.mass_str = re.sub(r, " + " + p, self.mass_str)
+            self.mass_str = re.sub(r, " + " + p, self.mass_str)"""
         for molecule in self.mass_str.split("+"):
             molecule_list.append(molecule)
         total_mass = 0.0
@@ -154,12 +168,19 @@ class App:
                 continue
             m = {}
             molecule = molecule.strip()
+            paren = re.findall(r, molecule)
+            molecule = re.sub(r, "", molecule)
             if molecule[0].isdigit():
-                m["front_multiplier"] = int(molecule[0])
+                m["front_multiplier"] = int(re.findall("\d+|$", molecule)[0])
                 while not molecule[0].isalpha():
                     molecule = molecule[1:]
             else:
                 m["front_multiplier"] = 1
+            for p in paren:
+                p = p.strip()
+                p, mult = p.split(").")
+                p = str(int(mult)*m["front_multiplier"]) + p[1:]
+                molecule_list.append(p)
             molecule = molecule.split(" ")
             m["molecule_mass"] = 0
             for atom in molecule:
