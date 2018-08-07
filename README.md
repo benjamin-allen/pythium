@@ -5,6 +5,8 @@ It calculates masses for inputted chemical formulas.
 
 # Usage
 
+Depends on Python 3 or later (3.7.0 tested)
+
 Run `pythium.py` to pull up the main window. There is a 
 periodic table of the elements, a text entry box, a calculate
 button, and a result field.
@@ -31,7 +33,7 @@ Leading coefficients can be specified by making the first value
 of the an entry a number. Multiple entries can be summed by using
 a `+` between them. For example, `2Fe.2 O.3 + 3C`.
 
-###Mouse
+### Mouse
 Masses of elements can be added by clicking on the respective
 cell. If the element clicked is the same as the previous, it will
 be subscripted instead of appended. Pressing the hydrogen cell
