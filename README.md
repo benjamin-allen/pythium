@@ -36,3 +36,8 @@ Masses of elements can be added by clicking on the respective
 cell. If the element clicked is the same as the previous, it will
 be subscripted instead of appended. Pressing the hydrogen cell
 twice will give `H.2`.
+
+
+# Screenshot
+
+![Pythium screenshot](./Screenshot.png?raw=true)
