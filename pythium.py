@@ -122,9 +122,9 @@ class App:
         frame2.grid_rowconfigure(2, minsize=size//2*10)
         frame2.pack()
         self.entry = Entry(frame2, width=size*10, font=("Sans", 16))
-        self.entry.bind('<Return>', lambda event: self.read())
+        self.entry.bind('<Return>', lambda event: self.calculate())
         self.entry.grid(row=1, column=0, sticky=W+E)
-        b = Button(frame2, text="Calculate", command=self.read, relief=SOLID, overrelief=FLAT, bd=2)
+        b = Button(frame2, text="Calculate", command=self.calculate, relief=SOLID, overrelief=FLAT, bd=2)
         b.grid(row=1, column=1, padx=2)
         self.label = Label(frame2, text="Mass: ", justify=LEFT)
         self.label.config(width=20, font=("Sans", 32), anchor="w")
@@ -145,7 +145,7 @@ class App:
         else:
             self.entry.insert(END, " " + self.elements[element].symbol.capitalize())
 
-    def read(self):
+    def calculate(self):
         self.mass_str = self.entry.get().lower()
         molecule_list = []
         r = re.compile("\s*\+\s*")
